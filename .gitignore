@@ -1,0 +1,13 @@
+bin/
+logs
+project/project
+project/target
+target
+tmp
+.history
+.cache
+.settings/
+.classpath
+.project
+.DS_Store
+
