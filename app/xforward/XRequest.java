@@ -9,7 +9,11 @@ public class XRequest {
 	private String remoteAddress;
 	private boolean isSecure;
 
-	public void parseXForwarded() {
+	public XRequest() {
+		parseRequest();
+	}
+
+	private void parseRequest() {
 
 		Request req = play.mvc.Http.Context.current().request();
 
@@ -32,7 +36,7 @@ public class XRequest {
 		}
 	}
 
-	public boolean isRequestSecure(Request req) {
+	private boolean isRequestSecure(Request req) {
 
 		String xForwardedProtoHeader = req.getHeader("x-forwarded-proto");
 		String xForwardedSslHeader = req.getHeader("x-forwarded-ssl");
