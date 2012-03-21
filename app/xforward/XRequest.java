@@ -33,6 +33,9 @@ public class XRequest {
 			}
 
 			remoteAddress = req.getHeader("x-forwarded-for");
+		} else {
+			
+			host = remoteAddress = req.host();
 		}
 	}
 
