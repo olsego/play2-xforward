@@ -1,5 +1,8 @@
 package xforward;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import play.Play;
 import play.mvc.Http.Request;
 
@@ -7,7 +10,8 @@ public class XRequest {
 
 	private String host;
 	private String remoteAddress;
-	private boolean isSecure;
+	private Boolean isSecure;
+	private Map<String, String> parameters;
 
 	public XRequest() {
 		parseRequest();
@@ -17,19 +21,23 @@ public class XRequest {
 
 		Request req = play.mvc.Http.Context.current().request();
 
-		Boolean xForwardedSupport = new Boolean(Play.application().configuration().getString("XForwardedSupport"));
+		String xForwardedSupport = Play.application().configuration()
+				.getString("XForwardedSupport");
 
 		remoteAddress = req.getHeader("x-forwarded-for");
-		if (xForwardedSupport.booleanValue() && remoteAddress != null) {
+		if (xForwardedSupport != null && remoteAddress != null) {
 
-			//TODO: Once Play2 has the remoteAddress, validate the following
-	        //if (!Arrays.asList(Play.configuration.getProperty("XForwardedSupport", "127.0.0.1").split("[\\s,]+")).contains(remoteAddress)) {
-	        //    throw new RuntimeException("This proxy request is not authorized: " + remoteAddress);
-			//else
+			// TODO: Once Play2 has the remoteAddress, validate the following
+			// if
+			// (!Arrays.asList(Play.configuration.getProperty("XForwardedSupport",
+			// "127.0.0.1").split("[\\s,]+")).contains(remoteAddress)) {
+			// throw new
+			// RuntimeException("This proxy request is not authorized: " +
+			// remoteAddress);
+			// else
 
-			isSecure = isRequestSecure(req);
-
-			host = (String) Play.application().configuration().getString("XForwardedHost");
+			host = (String) Play.application().configuration()
+					.getString("XForwardedHost");
 			if (host == null || host.trim().length() == 0) {
 
 				host = req.getHeader("x-forwarded-host");
@@ -37,22 +45,9 @@ public class XRequest {
 					host = req.host();
 				}
 			}
-			
-		} else {
 
+		} else
 			host = remoteAddress = req.host();
-		}
-	}
-
-	private boolean isRequestSecure(Request req) {
-
-		String xForwardedProtoHeader = req.getHeader("x-forwarded-proto");
-		String xForwardedSslHeader = req.getHeader("x-forwarded-ssl");
-		String frontEndHttpsHeader = req.getHeader("front-end-https");
-
-		return ("https".equalsIgnoreCase(Play.application().configuration().getString("XForwardedProto"))
-				|| "https".equalsIgnoreCase(xForwardedProtoHeader) || "on".equalsIgnoreCase(xForwardedSslHeader) || "on"
-					.equalsIgnoreCase(frontEndHttpsHeader));
 	}
 
 	public String getHost() {
@@ -64,7 +59,66 @@ public class XRequest {
 	}
 
 	public boolean isSecure() {
-		return isSecure;
+
+		if (isSecure == null) {
+
+			Request req = play.mvc.Http.Context.current().request();
+
+			String xForwardedProtoHeader = req.getHeader("x-forwarded-proto");
+			String xForwardedSslHeader = req.getHeader("x-forwarded-ssl");
+			String frontEndHttpsHeader = req.getHeader("front-end-https");
+
+			if ("https".equalsIgnoreCase(Play.application().configuration()
+					.getString("XForwardedProto"))
+					|| "https".equalsIgnoreCase(xForwardedProtoHeader)
+					|| "on".equalsIgnoreCase(xForwardedSslHeader)
+					|| "on".equalsIgnoreCase(frontEndHttpsHeader)) {
+
+				isSecure = Boolean.TRUE;
+			} else
+				isSecure = Boolean.FALSE;
+		}
+
+		return isSecure.booleanValue();
+	}
+
+	/**
+	 * Reads the request parameters, there is no methods in Play2 as of now...
+	 * 
+	 * @param request
+	 * @return a map with the request parameters
+	 */
+	public Map<String, String> getParameters() {
+
+		if (parameters == null) {
+
+			Request request = play.mvc.Http.Context.current().request();
+
+			Map<String, String[]> urlFormEncoded = new HashMap<String, String[]>();
+			if (request.body().asFormUrlEncoded() != null) {
+				urlFormEncoded = request.body().asFormUrlEncoded();
+			}
+
+			Map<String, String[]> queryString = request.queryString();
+
+			Map<String, String> data = new HashMap<String, String>();
+
+			for (String key : urlFormEncoded.keySet()) {
+				String[] value = urlFormEncoded.get(key);
+				if (value.length > 0) {
+					data.put(key, value[0]);
+				}
+			}
+
+			for (String key : queryString.keySet()) {
+				String[] value = queryString.get(key);
+				if (value.length > 0) {
+					data.put(key, value[0]);
+				}
+			}
+			parameters = data;
+		}
+		return parameters;
 	}
 
 }
