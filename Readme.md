@@ -7,7 +7,7 @@ This module brings back the missing Proxy forwarding settings from Play1.
 
 As awkward as it sounds, Play2 is missing **Request.remoteAddress**!
 
-In other words the server doesn't who calls it. Knowing the client address is a typically requirement for Javascript API such as _recaptcha_ or _browserid_, where it is used for security and validation purposes.
+In other words the server doesn't known who calls it. Knowing the client address is a typically requirement for Javascript API such as _recaptcha_ or _browserid_, where it is used for security and validation purposes.
 
 A way around this limitation is to use a Proxy server in front of Play2. The proxy server then serves the remoteAddress as an HTTP Header variable called "X-Forwarded-For".
 
