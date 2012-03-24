@@ -17,9 +17,15 @@ public class XRequest {
 
 		Request req = play.mvc.Http.Context.current().request();
 
-		String xForwardedSupport = Play.application().configuration().getString("XForwardedSupport");
+		Boolean xForwardedSupport = new Boolean(Play.application().configuration().getString("XForwardedSupport"));
 
-		if (xForwardedSupport != null && req.getHeader("x-forwarded-for") != null) {
+		remoteAddress = req.getHeader("x-forwarded-for");
+		if (xForwardedSupport.booleanValue() && remoteAddress != null) {
+
+			//TODO: Once Play2 has the remoteAddress, validate the following
+	        //if (!Arrays.asList(Play.configuration.getProperty("XForwardedSupport", "127.0.0.1").split("[\\s,]+")).contains(remoteAddress)) {
+	        //    throw new RuntimeException("This proxy request is not authorized: " + remoteAddress);
+			//else
 
 			isSecure = isRequestSecure(req);
 
@@ -31,10 +37,9 @@ public class XRequest {
 					host = req.host();
 				}
 			}
-
-			remoteAddress = req.getHeader("x-forwarded-for");
-		} else {
 			
+		} else {
+
 			host = remoteAddress = req.host();
 		}
 	}
